@@ -45,5 +45,13 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+        // 收集下一个方块，推送给 NextBlockView
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.nextTetrisCube.collect { next ->
+                    binding.nextBlockView.updatePiece(next)
+                }
+            }
+        }
     }
 }

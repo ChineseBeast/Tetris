@@ -25,6 +25,9 @@ class GameViewModel : ViewModel() {
     private val _currentTetrisCube = MutableStateFlow<TetrisCube?>(null)
     val currentTetrisCube: StateFlow<TetrisCube?> = _currentTetrisCube.asStateFlow()
 
+    private val _nextTetrisCube = MutableStateFlow<TetrisCube?>(null)
+    val nextTetrisCube: StateFlow<TetrisCube?> = _nextTetrisCube.asStateFlow()
+
     /** 当前使用的随机源，可通过种子控制来测试 */
     private var random: Random = Random.Default
 
@@ -33,21 +36,22 @@ class GameViewModel : ViewModel() {
 
     /** 开启循环游戏 */
     fun startGame() {
-        gameLoopJob?.cancel()
-        gameLoopJob = viewModelScope.launch {
-            while(true){
-                delay(500) // 每 500ms 下落一格
-                moveDown()
-            }
-        }
+        startGameLoop()
     }
 
     /** 生成的方块置于棋盘顶部中央 */
     fun spawnTetrisCube(){
-        val currentCube = createRandomTetrisCube()
+        if(_nextTetrisCube.value == null){
+            //第一次调用就先 生成两个方块
+            _nextTetrisCube.value = createRandomTetrisCube()
+        }
+
+        val currentCube = _nextTetrisCube.value ?: return
         val spawnX = calculateSpawnX(currentCube.type)
         val createCube = currentCube.copy(boardX = spawnX, boardY = 0)
         _currentTetrisCube.value = createCube
+        //这里将下一个创建出来
+        _nextTetrisCube.value = createRandomTetrisCube()
     }
     /** 计算方块居中生成所需的 X 坐标 */
     private fun calculateSpawnX(type: TetrisCubeType): Int {
@@ -65,6 +69,24 @@ class GameViewModel : ViewModel() {
             boardX = 0,
             boardY = 0,
         )
+    }
+
+    /** 左移 */
+    fun moveLeft(){
+        val cube = _currentTetrisCube.value ?: return
+        val moved = cube.movedBy(-1,0)
+        if(isValidPosition(moved,_gameBoard.value)){
+            _currentTetrisCube.value = moved
+        }
+    }
+
+    /** 右移 */
+    fun moveRight(){
+        val cube = _currentTetrisCube.value ?: return
+        val moved = cube.movedBy(1,0)
+        if(isValidPosition(moved,_gameBoard.value)){
+            _currentTetrisCube.value = moved
+        }
     }
 
     /** 向下移动 */
@@ -104,7 +126,8 @@ class GameViewModel : ViewModel() {
     private fun startGameLoop(){
         gameLoopJob?.cancel()
         gameLoopJob = viewModelScope.launch(Dispatchers.Default) {
-            while(isActive){
+            while(true){
+                delay(500) // 每 500ms 下落一格
                 moveDown()
             }
         }

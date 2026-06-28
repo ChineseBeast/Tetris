@@ -114,23 +114,6 @@
         app:layout_constraintTop_toBottomOf="@id/nextBlockView"
         />
     <Button
-        android:id="@+id/btnUp"
-        android:layout_width="50dp"
-        android:layout_marginTop="24dp"
-        android:layout_height="48dp"
-        android:text="上"
-        android:paddingLeft="0dp"
-        android:paddingRight="0dp"
-        android:textSize="16sp"
-        android:gravity="center"
-        android:background="@color/blue"
-        app:backgroundTint="@null"
-        app:layout_constraintStart_toStartOf="@id/btnCenter"
-        app:layout_constraintEnd_toEndOf="@id/btnCenter"
-        app:layout_constraintBottom_toTopOf="@id/btnCenter"
-        android:layout_marginBottom="6dp"
-        />
-    <Button
         android:id="@+id/btnDown"
         android:layout_width="50dp"
         android:layout_height="48dp"
