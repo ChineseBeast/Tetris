@@ -72,9 +72,20 @@ class GameBoardView @JvmOverloads constructor(
         canvas.drawColor(bgPaint.color)
         // 画网格线
         drawGridLines(canvas, totalWidth, totalHeight)
-
+        //画固定了的方块
+        drawReadyCube(canvas)
         //画下落方块
         drawCurrentCube(canvas)
+    }
+
+    //绘制已经固定了的方块
+    private fun drawReadyCube(canvas: Canvas){
+        for (row in 0..<ROWS){
+            for(col in 0..<COLS){
+                val color = board[col,row]?: continue
+                drawCell(canvas,col,row,color)
+            }
+        }
     }
 
     //绘制下落的方块

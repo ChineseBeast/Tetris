@@ -19,4 +19,7 @@ data class TetrisCube(
     /** 实现方块的移动 */
     fun movedBy(dx: Int,dy: Int): TetrisCube =
         copy(boardX = boardX + dx, boardY = boardY + dy)
+
+    /** 顺时针旋转 */
+    fun rotateClockwise(): TetrisCube = copy(rotation= rotation + 1 and 3)
 }

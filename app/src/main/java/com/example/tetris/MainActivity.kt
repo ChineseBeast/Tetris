@@ -53,5 +53,16 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+        // 绑定按钮事件
+        setupButtonListeners()
+    }
+
+    private fun setupButtonListeners() {
+        binding.btnDown.setOnClickListener { viewModel.moveDown() }
+        binding.btnLeft.setOnClickListener{ viewModel.moveLeft() }
+        binding.btnRight.setOnClickListener{ viewModel.moveRight() }
+        binding.btnRotate.setOnClickListener{ viewModel.rotate() }
+        binding.btnHardDrop.setOnClickListener{ viewModel.hardDrop() }
+
     }
 }

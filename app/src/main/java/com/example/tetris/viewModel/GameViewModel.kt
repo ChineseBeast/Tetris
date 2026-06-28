@@ -89,6 +89,27 @@ class GameViewModel : ViewModel() {
         }
     }
 
+    /** 顺时针旋转 */
+    fun rotate(){
+        val cube = _currentTetrisCube.value?: return
+        val rotated = cube.rotateClockwise()
+        if(isValidPosition(rotated,_gameBoard.value)){
+            _currentTetrisCube.value = rotated
+        }
+    }
+
+    fun hardDrop(){
+        var cube = _currentTetrisCube.value?: return
+        while(true){
+            val next = cube.movedBy(0,1)
+            if(!isValidPosition(next,_gameBoard.value))break
+            cube = next
+        }
+        _currentTetrisCube.value = cube
+        // 固定下来
+        lockAndSpawn()
+    }
+
     /** 向下移动 */
     fun moveDown(): Boolean{
         val currentCube = _currentTetrisCube.value ?: return false
@@ -127,7 +148,7 @@ class GameViewModel : ViewModel() {
         gameLoopJob?.cancel()
         gameLoopJob = viewModelScope.launch(Dispatchers.Default) {
             while(true){
-                delay(500) // 每 500ms 下落一格
+                delay(2000) // 每 500ms 下落一格
                 moveDown()
             }
         }
