@@ -1,5 +1,6 @@
 package com.example.tetris.viewModel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.model.GameState
@@ -28,6 +29,14 @@ class GameViewModel : ViewModel() {
     private val _nextTetrisCube = MutableStateFlow<TetrisCube?>(null)
     val nextTetrisCube: StateFlow<TetrisCube?> = _nextTetrisCube.asStateFlow()
 
+    private val _gamePhase = MutableStateFlow<GameState>(GameState.Idle)
+    val gamePhase :StateFlow<GameState> = _gamePhase.asStateFlow()
+
+    // 用于GameOver状态
+    private val _score = MutableStateFlow(0)
+    val score : StateFlow<Int> = _score.asStateFlow()
+
+
     /** 当前使用的随机源，可通过种子控制来测试 */
     private var random: Random = Random.Default
 
@@ -36,7 +45,27 @@ class GameViewModel : ViewModel() {
 
     /** 开启循环游戏 */
     fun startGame() {
+        gameLoopJob?.cancel()
+        Log.e("www","==========")
+        _gameBoard.value = GameBoard.empty()
+        _gamePhase.value =GameState.Playing
+        _score.value = 0
+
+        spawnTetrisCube()
         startGameLoop()
+    }
+
+    //中间按钮切换开始暂停
+    fun togglePause(){
+        when(_gamePhase.value){
+            is GameState.Playing ->{
+                _gamePhase.value = GameState.Paused
+            }
+            is GameState.Paused ->{
+                _gamePhase.value = GameState.Playing
+            }
+            else -> { /** GameOver/Idle 无需操作 */}
+        }
     }
 
     /** 生成的方块置于棋盘顶部中央 */
@@ -49,15 +78,28 @@ class GameViewModel : ViewModel() {
         val currentCube = _nextTetrisCube.value ?: return
         val spawnX = calculateSpawnX(currentCube.type)
         val createCube = currentCube.copy(boardX = spawnX, boardY = 0)
+
+        //这里需要判断一下 刚刚生成的方块是不是触顶 是否可以放置 不行则GameOver了
+        if(!isValidPosition(createCube,_gameBoard.value)){
+            //游戏结束关闭一些协程
+            gameLoopJob?.cancel()
+            // GameOver 加了对应分数
+            _gamePhase.value = GameState.GameOver(_score.value)
+            _currentTetrisCube.value = null
+            _nextTetrisCube.value = null
+            return
+
+        }
+
         _currentTetrisCube.value = createCube
         //这里将下一个创建出来
         _nextTetrisCube.value = createRandomTetrisCube()
     }
+
     /** 计算方块居中生成所需的 X 坐标 */
     private fun calculateSpawnX(type: TetrisCubeType): Int {
         return (GameBoard.BOARD_WIDTH - type.boundingBoxSize) / 2
     }
-
 
     /** 生成一个随机方块 */
     private fun createRandomTetrisCube():TetrisCube{
@@ -147,9 +189,12 @@ class GameViewModel : ViewModel() {
     private fun startGameLoop(){
         gameLoopJob?.cancel()
         gameLoopJob = viewModelScope.launch(Dispatchers.Default) {
-            while(true){
+            while(isActive){
                 delay(2000) // 每 500ms 下落一格
-                moveDown()
+                //当只有是游戏ing状态才进行下落
+                if (_gamePhase.value is GameState.Playing) {
+                    moveDown()
+                }
             }
         }
     }

@@ -10,6 +10,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.example.myapplication.data.model.GameState
 import com.example.tetris.databinding.ActivityMainBinding
 import com.example.tetris.viewModel.GameViewModel
 import kotlinx.coroutines.flow.combine
@@ -29,9 +30,6 @@ class MainActivity : AppCompatActivity() {
         // 创建 ViewModel
         viewModel = ViewModelProvider(this)[GameViewModel::class.java]
 
-        // 生成一个方块，显示在棋盘上
-        viewModel.spawnTetrisCube()
-        viewModel.startGame()
         // 收集状态变化，驱动 GameBoardView 重绘
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -64,5 +62,16 @@ class MainActivity : AppCompatActivity() {
         binding.btnRotate.setOnClickListener{ viewModel.rotate() }
         binding.btnHardDrop.setOnClickListener{ viewModel.hardDrop() }
 
+        // 开始 暂停按钮
+        binding.btnCenter.setOnClickListener {
+            when(viewModel.gamePhase.value){
+                is GameState.Playing-> viewModel.togglePause()
+                is GameState.Paused -> viewModel.togglePause()
+                is GameState.Idle, is GameState.GameOver ->{
+                    viewModel.startGame()
+                }
+
+            }
+        }
     }
 }
