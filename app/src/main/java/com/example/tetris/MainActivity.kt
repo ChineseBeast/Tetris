@@ -1,5 +1,6 @@
 package com.example.tetris
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.enableEdgeToEdge
@@ -12,10 +13,14 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.myapplication.data.model.GameState
 import com.example.tetris.databinding.ActivityMainBinding
+import com.example.tetris.logic.local.Database.TetrisDatabase
+import com.example.tetris.logic.local.Entity.GameRecord
 import com.example.tetris.viewModel.GameViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -102,6 +107,22 @@ class MainActivity : AppCompatActivity() {
                             val score = phase.score
                             binding.tvGameOverScore.text = "分数: ${score.toString()}"
                             binding.gameOverOverlay.visibility = android.view.View.VISIBLE
+                            //将GameOver的数据加载到Room数据库
+                            lifecycleScope.launch {
+                                val db = withContext(Dispatchers.IO){
+                                    TetrisDatabase.getInstance(this@MainActivity)
+                                }
+                                val spendTime = viewModel.spendTime.value
+                                val score = viewModel.score.value
+                                db.gameRecordDao().insert(
+                                    GameRecord(
+                                        playDate = System.currentTimeMillis(),
+                                        duration = spendTime,
+                                        score = score,
+                                        note = ""
+                                    )
+                                )
+                            }
                         }
                     }
 
@@ -144,6 +165,11 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnRestart.setOnClickListener{
             viewModel.startGame()
+        }
+        //显示跳转到recordActivity
+        binding.btnMore.setOnClickListener {
+            val intent = Intent(this,RecordActivity::class.java)
+            startActivity(intent)
         }
     }
 }
