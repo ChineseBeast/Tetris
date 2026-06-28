@@ -15,4 +15,8 @@ data class TetrisCube(
             (boardX + colOffset) to (boardY + rowOffset)
         }
     }
+
+    /** 实现方块的移动 */
+    fun movedBy(dx: Int,dy: Int): TetrisCube =
+        copy(boardX = boardX + dx, boardY = boardY + dy)
 }

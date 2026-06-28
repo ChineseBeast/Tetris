@@ -85,7 +85,7 @@
         app:layout_constraintTop_toTopOf="@id/gameBoardView"
         android:textAlignment="center"
         />
-    <com.example.tetris.viewModel.NextBlockView
+    <com.example.tetris.ui.game.NextBlockView
         android:id="@+id/nextBlockView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

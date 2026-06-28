@@ -1,5 +1,7 @@
 package com.example.tetris.logic.model
 
+import android.icu.text.Transliterator.Position
+
 /**
  * 10×20 游戏棋盘数据结构。
  *
@@ -24,4 +26,29 @@ data class GameBoard(
     /** 指定坐标是否在棋盘范围内 */
     fun isInBounds(col: Int, row: Int): Boolean =
         col in 0..<width && row in 0..<height
+
+    /** 返回的某一个位置（row * width + col）的颜色值 */
+    operator fun get(col: Int, row: Int): Int? {
+        if (col !in 0..width || row !in 0..height) return null
+        return cells[row * width + col]
+    }
+
+    /** 指定格子是否为空 */
+    fun isEmptyAt(col: Int, row: Int): Boolean = get(col, row) == null
+
+    private fun toIndex(col: Int, row: Int): Int = row * width + col
+    /** 设置当cell */
+    fun setCell(col: Int, row: Int, color: Int): GameBoard {
+        val mutable = cells.toMutableList()
+        mutable[toIndex(col, row)] = color
+        return copy(cells = mutable)
+    }
+    /** 设置批量cell */
+    fun setCells(positions: List<Pair<Int, Int>>, color: Int): GameBoard{
+        val mutable = cells.toMutableList()
+        for((col,row) in positions){
+            mutable[toIndex(col,row)]=color
+        }
+        return copy(cells = mutable)
+    }
 }
