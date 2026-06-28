@@ -24,6 +24,7 @@ class RecordActivity : AppCompatActivity() {
     private lateinit var adapter: RecordAdapter
     private val db by lazy { TetrisDatabase.getInstance(this) }
     private var recordsJob: Job? = null
+    private var currentDialog: AlertDialog? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRecordBinding.inflate(layoutInflater)
@@ -61,19 +62,20 @@ class RecordActivity : AppCompatActivity() {
     }
     // 显示弹窗编辑备注
     private fun showEditNoteDialog(record: GameRecord) {
+        currentDialog?.dismiss()
         val editText = EditText(this).apply {
             setText(record.note)
             setSelection(record.note.length)
             hint = "请输入备注"
         }
-        AlertDialog.Builder(this)
+        currentDialog = AlertDialog.Builder(this)
             .setTitle("编辑备注")
             .setView(editText)
             .setPositiveButton("确定") { _, _ ->
                 val newNote = editText.text.toString().trim()
                 if (newNote != record.note) {
-                    //修改这个记录的note
                     lifecycleScope.launch {
+                        Log.e("oooo","===============")
                         db.gameRecordDao().update(record.copy(note = newNote))
                     }
                 }
@@ -83,6 +85,7 @@ class RecordActivity : AppCompatActivity() {
     }
     override fun onDestroy() {
         recordsJob?.cancel()
+        currentDialog?.dismiss()
         super.onDestroy()
     }
 }

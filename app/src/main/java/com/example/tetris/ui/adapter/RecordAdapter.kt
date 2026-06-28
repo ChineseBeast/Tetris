@@ -25,7 +25,7 @@ class RecordAdapter(
             binding.tvDate.text = dateFormat.format(Date(record.playDate))
             binding.tvScore.text = numberFormat.format(record.score)
             binding.tvDuration.text = formatDuration(record.duration)
-            binding.tvNote.text = record.note.ifEmpty { "—" }
+            binding.tvNote.text = "备注"
             binding.tvNote.setOnClickListener {
                 onNoteClick?.invoke(record)
             }
