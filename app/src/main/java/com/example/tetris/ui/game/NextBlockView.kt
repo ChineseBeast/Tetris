@@ -1,4 +1,4 @@
-package com.example.tetris.viewModel
+package com.example.tetris.ui.game
 
 import android.content.Context
 import android.graphics.Canvas

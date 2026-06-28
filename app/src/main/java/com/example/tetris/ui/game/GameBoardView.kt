@@ -7,6 +7,7 @@ import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
 import com.example.tetris.logic.model.GameBoard
+import com.example.tetris.logic.model.TetrisCube
 
 class GameBoardView @JvmOverloads constructor(
     context: Context,
@@ -22,6 +23,8 @@ class GameBoardView @JvmOverloads constructor(
     }
 
     private var board: GameBoard = GameBoard.empty()
+    //当前下落方块
+    private var currentCube: TetrisCube? = null
 
     /** 每个方块格子的像素大小，在 onMeasure 中计算 */
     private var cellSize: Float = 0f
@@ -39,7 +42,10 @@ class GameBoardView @JvmOverloads constructor(
         style = Paint.Style.STROKE //只画描边线条
         strokeWidth = 0.5f //线条粗细：0.5 像素
     }
-
+    /** 方块填充 */
+    private val cellPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+    }
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val realWidth = MeasureSpec.getSize(widthMeasureSpec)
         val realHeight = MeasureSpec.getSize(heightMeasureSpec)
@@ -67,7 +73,36 @@ class GameBoardView @JvmOverloads constructor(
         // 画网格线
         drawGridLines(canvas, totalWidth, totalHeight)
 
+        //画下落方块
+        drawCurrentCube(canvas)
     }
+
+    //绘制下落的方块
+    private fun drawCurrentCube(canvas: Canvas){
+        currentCube?.let { cube->
+            for((col,row) in cube.getAbsolutePositions()){
+                // 判断这个需要绘制的方块是否在棋盘外
+                if (board.isInBounds(col, row)) {
+                    drawCell(canvas, col, row, cube.type.color)
+                }
+            }
+
+        }
+    }
+
+    //给格子填充颜色，等于有物体
+    private fun drawCell(canvas: Canvas,col: Int,row: Int,color: Int){
+        val rect = cellRect
+        rect.left = col * cellSize + CELL_GAP
+        rect.top = row * cellSize + CELL_GAP
+        rect.right = (col + 1) * cellSize - CELL_GAP
+        rect.bottom = (row + 1) * cellSize - CELL_GAP
+
+        cellPaint.color = color
+        canvas.drawRect(rect, cellPaint)
+    }
+
+
     /** 绘制浅灰色网格线 */
     private fun drawGridLines(canvas: Canvas, totalWidth: Float, totalHeight: Float) {
         // 垂直线
@@ -80,6 +115,13 @@ class GameBoardView @JvmOverloads constructor(
             val y = row * cellSize
             canvas.drawLine(0f, y, totalWidth, y, gridPaint)
         }
+    }
+    /** 给外部提供修改方法 */
+    fun updateData(board: GameBoard, currentCube: TetrisCube?) {
+        this.board = board
+        this.currentCube = currentCube
+        // 通知onDraw方法重新绘制
+        invalidate()
     }
 
 

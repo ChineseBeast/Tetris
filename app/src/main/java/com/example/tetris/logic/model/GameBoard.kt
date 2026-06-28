@@ -21,4 +21,7 @@ data class GameBoard(
         }
     }
 
+    /** 指定坐标是否在棋盘范围内 */
+    fun isInBounds(col: Int, row: Int): Boolean =
+        col in 0..<width && row in 0..<height
 }
