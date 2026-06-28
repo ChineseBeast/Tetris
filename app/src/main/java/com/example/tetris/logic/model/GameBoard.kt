@@ -51,4 +51,26 @@ data class GameBoard(
         }
         return copy(cells = mutable)
     }
+
+    /** 清除填满了的行,并且向下填,返回清除后的Board和清理了几行 */
+    fun clearLines():Pair<GameBoard,Int>{
+        // cells.chunked(width) 把cell 分成几个长度为width的段
+        // remaining就是需要留下了的行
+        val remaining = cells.chunked(width).filter { row -> row.any { it == null } }
+        val cleared = height - remaining.size
+        if (cleared == 0) return this to 0
+
+        val newCells =  mutableListOf<Int?>()
+        //从上到下，上面都是消除了的
+        for(i in 0..<cleared){
+            for(j in 0..<width){
+                //都是消除了的
+                newCells.add(null)
+            }
+        }
+        for(row in remaining){
+            newCells.addAll(row)
+        }
+        return copy(cells= newCells) to cleared
+    }
 }

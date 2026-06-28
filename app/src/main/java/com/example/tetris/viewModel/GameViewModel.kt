@@ -13,6 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.random.Random
@@ -36,23 +37,62 @@ class GameViewModel : ViewModel() {
     private val _score = MutableStateFlow(0)
     val score : StateFlow<Int> = _score.asStateFlow()
 
+    // 游戏难度
+    private val _level = MutableStateFlow(1)
+    val level: StateFlow<Int> = _level.asStateFlow()
 
+    private val _spendTime = MutableStateFlow(0)
+    val spendTime = _spendTime.asStateFlow()
     /** 当前使用的随机源，可通过种子控制来测试 */
     private var random: Random = Random.Default
 
     /** 自动下落协程 */
     private var gameLoopJob: Job? = null
 
+    /** 倒计时协程 */
+    private var timerJob: Job? = null
+
     /** 开启循环游戏 */
     fun startGame() {
         gameLoopJob?.cancel()
-        Log.e("www","==========")
+        timerJob?.cancel()
         _gameBoard.value = GameBoard.empty()
         _gamePhase.value =GameState.Playing
         _score.value = 0
+        _level.value = 1
+        _spendTime.value = 0
 
         spawnTetrisCube()
         startGameLoop()
+        startTimer()
+    }
+
+    /** 计时器 */
+    private fun startTimer(){
+        timerJob?.cancel()
+        _spendTime.value = 0
+        timerJob = viewModelScope.launch(Dispatchers.Default) {
+            while (isActive){
+                delay(1000)
+                if(_gamePhase.value is GameState.Playing){
+                    _spendTime.update { it+1 }
+                }
+            }
+        }
+    }
+    /** 加分机制 */
+    private fun addScore(lineCleared: Int){
+        //消灭1行100分，2行300，3行600，4行1000
+        val lineScores = mapOf(1 to 100,2 to 300,3 to 600,4 to 1000)
+        val gained = lineScores[lineCleared] ?: (lineCleared * 100)
+        _score.update { it + gained }
+
+        //每10行升一级
+        var levelNow = _score.value / 1000
+        if (levelNow < 1) {
+            levelNow = 1
+        }
+        _level.update { levelNow }
     }
 
     //中间按钮切换开始暂停
@@ -180,17 +220,39 @@ class GameViewModel : ViewModel() {
 
         val updatedBoard =board.setCells(currentCube.getAbsolutePositions(), currentCube.type.color)
         _gameBoard.value = updatedBoard
-        // 清除方块进行生成下一个
+
+        val (clearBoard,clearLineNum) = updatedBoard.clearLines()
+        if(clearLineNum>0){
+            _gameBoard.value = clearBoard
+            addScore(clearLineNum)
+        }
+
+        // 进行生成下一个
         _currentTetrisCube.value = null
         spawnTetrisCube()
     }
+
+    /** 根据等级来看下降速度 */
+    private fun delayByLevel(): Long{
+//        var level = _level.value
+//        if (level < 1) level = 1
+//        if (level > 20) level = 20
+//        // 每升一个level就减50ms
+//        var time = 1000 - (level - 1) * 50
+//        if (time < 100) time = 100
+//        return time.toLong()
+
+        val level = _level.value.coerceIn(1, 20)
+        return (1000L - (level - 1) * 50L).coerceAtLeast(100L)
+    }
+
 
     /** 开启游戏循环 */
     private fun startGameLoop(){
         gameLoopJob?.cancel()
         gameLoopJob = viewModelScope.launch(Dispatchers.Default) {
             while(isActive){
-                delay(2000) // 每 500ms 下落一格
+                delay(delayByLevel())
                 //当只有是游戏ing状态才进行下落
                 if (_gamePhase.value is GameState.Playing) {
                     moveDown()

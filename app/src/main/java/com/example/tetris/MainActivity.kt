@@ -15,6 +15,8 @@ import com.example.tetris.databinding.ActivityMainBinding
 import com.example.tetris.viewModel.GameViewModel
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import java.text.NumberFormat
+import java.util.Locale
 
 //做内核
 class MainActivity : AppCompatActivity() {
@@ -51,6 +53,26 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+        // 得分情况
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.score.collect { score->
+                    binding.tvScore.text = score.toString()
+                }
+            }
+        }
+        // 花费时间
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.spendTime.collect { seconds ->
+                    val h = seconds / 3600
+                    val m = (seconds % 3600) / 60
+                    val s = seconds % 60
+                    binding.tvTimer.text = String.format("%02d:%02d:%02d", h, m, s)
+                }
+            }
+        }
+
         // 绑定按钮事件
         setupButtonListeners()
     }
