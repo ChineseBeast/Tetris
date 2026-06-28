@@ -206,5 +206,57 @@
         app:layout_constraintStart_toStartOf="@id/glVertical"
         app:layout_constraintTop_toBottomOf="@id/btnRotate" />
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/gameOverOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:background="#80000000">
+
+        <TextView
+            android:id="@+id/tvGameOverTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/game_over"
+            android:textColor="@android:color/white"
+            android:textSize="36sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif"
+            android:letterSpacing="0.1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/tvGameOverScore"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tvGameOverScore"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="分数: 0"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:fontFamily="sans-serif"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvGameOverTitle"
+            app:layout_constraintBottom_toTopOf="@id/btnRestart"
+            android:layout_marginBottom="24dp" />
+
+        <Button
+            android:id="@+id/btnRestart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/restart"
+            android:textColor="@android:color/white"
+            android:backgroundTint="@color/blue"
+            android:paddingHorizontal="32dp"
+            android:paddingVertical="12dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvGameOverScore"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -13,6 +13,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.example.myapplication.data.model.GameState
 import com.example.tetris.databinding.ActivityMainBinding
 import com.example.tetris.viewModel.GameViewModel
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
@@ -72,10 +73,56 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-
+        // 等待GameOver状态进行
+        observeGamePhase()
         // 绑定按钮事件
         setupButtonListeners()
     }
+    private fun observeGamePhase() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.gamePhase.collect(){phase->
+                    val playing = phase is GameState.Playing
+                    setControlsEnabled(playing)
+                    when (phase){
+                        is GameState.Idle -> {
+                            binding.btnCenter.text = "开"
+                            binding.gameOverOverlay.visibility = android.view.View.GONE
+                        }
+                        is GameState.Playing -> {
+                            binding.btnCenter.text = "关"
+                            binding.gameOverOverlay.visibility = android.view.View.GONE
+                        }
+                        is GameState.Paused -> {
+                            binding.btnCenter.text = "开"
+                        }
+                        is GameState.GameOver -> {
+                            binding.btnCenter.text = "开"
+                            // gameOver状态下是保存了score的
+                            val score = phase.score
+                            binding.tvGameOverScore.text = "分数: ${score.toString()}"
+                            binding.gameOverOverlay.visibility = android.view.View.VISIBLE
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+
+
+    /** 在非 Playing（Idle / Paused / GameOver）状态下禁用方向按钮 */
+    private fun setControlsEnabled(enabled: Boolean) {
+        val buttons = listOf(
+            binding.btnDown, binding.btnLeft,
+            binding.btnRight, binding.btnRotate,
+            binding.btnHardDrop
+        )
+        buttons.forEach { it.isEnabled = enabled }
+        buttons.forEach { it.alpha = if (enabled) 1.0f else 0.4f }
+    }
+
+
 
     private fun setupButtonListeners() {
         binding.btnDown.setOnClickListener { viewModel.moveDown() }
@@ -92,8 +139,11 @@ class MainActivity : AppCompatActivity() {
                 is GameState.Idle, is GameState.GameOver ->{
                     viewModel.startGame()
                 }
-
             }
+        }
+
+        binding.btnRestart.setOnClickListener{
+            viewModel.startGame()
         }
     }
 }
