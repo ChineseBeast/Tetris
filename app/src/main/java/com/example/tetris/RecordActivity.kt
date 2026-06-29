@@ -2,6 +2,8 @@ package com.example.tetris
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.AdapterView
 import android.widget.EditText
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
@@ -31,19 +33,34 @@ class RecordActivity : AppCompatActivity() {
         setContentView(binding.root)
         toolBarBtnBack()
         setupRecyclerView()
-        loadRecords()
+        setSortSpinner()
+        loadRecords(0)
     }
 
-    private fun loadRecords() {
+    private fun loadRecords(sortIndex: Int) {
         recordsJob?.cancel()
         recordsJob = lifecycleScope.launch {
-            val flow = db.gameRecordDao().getAllOrderByDate()
+            val flow = when (sortIndex){
+                0 ->db.gameRecordDao().getAllOrderByDate()
+                1 ->db.gameRecordDao().getAllOrderByScore()
+                else -> db.gameRecordDao().getAllOrderByDate()
+            }
             flow.collect{   records->
                 adapter.submitList(records)
                 binding.tvRecordCount.text = "共计${records.size}条记录"
             }
         }
 
+    }
+    private fun setSortSpinner(){
+        binding.spinnerSort.onItemSelectedListener = object :AdapterView.OnItemSelectedListener{
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                loadRecords(position)
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {}
+
+        }
     }
 
     // 返回之间销毁activity
@@ -75,7 +92,6 @@ class RecordActivity : AppCompatActivity() {
                 val newNote = editText.text.toString().trim()
                 if (newNote != record.note) {
                     lifecycleScope.launch {
-                        Log.e("oooo","===============")
                         db.gameRecordDao().update(record.copy(note = newNote))
                     }
                 }

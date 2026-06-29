@@ -21,5 +21,8 @@ interface GameRecordDao {
     @Query("SELECT * FROM game_records ORDER BY playDate DESC")
     fun getAllOrderByDate(): Flow<List<GameRecord>>
 
+    /** 按得分降序查询所有记录 */
+    @Query("SELECT * FROM game_records ORDER BY score DESC")
+    fun getAllOrderByScore(): Flow<List<GameRecord>>
 
 }
