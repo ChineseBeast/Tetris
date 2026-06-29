@@ -7,4 +7,6 @@
     <string name="label_next">下一个</string>
     <string name="game_over">游戏结束</string>
     <string name="restart">重新开始</string>
+    <string name="record_title">记录</string>
+    <string name="record_count_placeholder">共 %d 条记录</string>
 </resources>
