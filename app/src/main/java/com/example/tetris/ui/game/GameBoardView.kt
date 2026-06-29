@@ -54,11 +54,8 @@ class GameBoardView @JvmOverloads constructor(
         val cellHeight = realHeight.toFloat() / ROWS
 
         cellSize = minOf(cellWidth,cellHeight)
-
-
         val boardWidth = (cellSize * COLS).toInt()
         val boardHeigth = (cellSize * ROWS).toInt()
-
 
         setMeasuredDimension(boardWidth,boardHeigth)
 

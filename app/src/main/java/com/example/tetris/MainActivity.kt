@@ -2,12 +2,7 @@ package com.example.tetris
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.myapplication.data.model.GameState
@@ -17,8 +12,6 @@ import com.example.tetris.logic.local.Entity.GameRecord
 import com.example.tetris.viewModel.GameViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.text.NumberFormat
-import java.util.Locale
 
 //做内核
 class MainActivity : AppCompatActivity() {
@@ -36,14 +29,14 @@ class MainActivity : AppCompatActivity() {
 
         // 观察 gameBoard + currentTetrisCube 驱动 GameBoardView 重绘
         viewModel.gameBoard.observe(this) { board ->
-            viewModel.currentTetrisCube.value?.let { piece ->
-                binding.gameBoardView.updateData(board, piece)
+            viewModel.currentTetrisCube.value?.let { cube ->
+                binding.gameBoardView.updateData(board, cube)
             }
         }
-        viewModel.currentTetrisCube.observe(this) { piece ->
-            if (piece != null) {
+        viewModel.currentTetrisCube.observe(this) { cube ->
+            if (cube != null) {
                 viewModel.gameBoard.value?.let { board ->
-                    binding.gameBoardView.updateData(board, piece)
+                    binding.gameBoardView.updateData(board, cube)
                 }
             }
         }
