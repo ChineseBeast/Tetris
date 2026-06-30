@@ -72,10 +72,8 @@ class RecordActivity : AppCompatActivity() {
     // RecyclerView
     private fun setupRecyclerView() {
         adapter = RecordAdapter(onNoteClick = { record -> showEditNoteDialog(record) })
-        binding.recyclerView.apply {
-            layoutManager = LinearLayoutManager(this@RecordActivity)
-            adapter = this@RecordActivity.adapter
-        }
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.recyclerView.adapter = adapter
     }
     // 显示弹窗编辑备注
     private fun showEditNoteDialog(record: GameRecord) {
