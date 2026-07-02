@@ -105,6 +105,13 @@ class GameViewModel : ViewModel() {
         }
     }
 
+    /** 切屏/跳转时自动暂停 */
+    fun pauseOnBackground() {
+        if (_gamePhase.value is GameState.Playing) {
+            _gamePhase.value = GameState.Paused
+        }
+    }
+
     /** 生成的方块置于棋盘顶部中央 */
     fun spawnTetrisCube(board: GameBoard = _gameBoard.value!!){
         val nextCube = _nextTetrisCube.value ?: createRandomTetrisCube().also {

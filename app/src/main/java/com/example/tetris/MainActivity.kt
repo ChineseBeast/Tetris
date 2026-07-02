@@ -117,7 +117,13 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
+    /** 保证退出游戏暂停 */
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (!hasFocus) {
+            viewModel.pauseOnBackground()
+        }
+    }
     private fun setupButtonListeners() {
         binding.btnDown.setOnClickListener { viewModel.moveDown() }
         binding.btnLeft.setOnClickListener{ viewModel.moveLeft() }
